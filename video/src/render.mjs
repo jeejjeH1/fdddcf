@@ -1,5 +1,5 @@
 // Deterministic frame renderer: drives window.seek(t) in headless Chromium and pipes frames to ffmpeg.
-// usage: node src/render.mjs [--stills t1,t2,...] [--workers 4] [--from s] [--to s]
+// usage: node src/render.mjs [--stills t1,t2,...] [--workers 4] [--fps 30] [--crf 12] [--from s] [--to s]
 import { createRequire } from 'module';
 import http from 'http';
 import fs from 'fs';
@@ -14,7 +14,7 @@ try { playwright = require('playwright'); } catch { playwright = require('/opt/n
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BUILD = path.join(ROOT, 'build');
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1] ?? true]] : a), []));
-const FPS = 30;
+const FPS = parseInt(args.fps || '30', 10);
 const WORKERS = parseInt(args.workers || '4', 10);
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.woff2': 'font/woff2', '.woff': 'font/woff', '.png': 'image/png' };
@@ -65,7 +65,7 @@ async function worker(k) {
   const { browser, page } = await openPage();
   const out = path.join(BUILD, 'seg', `seg${k}.mp4`);
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'png', '-i', '-',
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '12', '-pix_fmt', 'yuv420p', '-threads', '1', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', String(args.crf || 12), '-pix_fmt', 'yuv420p', '-threads', '1', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   for (let f = a; f < b; f++) {
     await page.evaluate(t => window.seek(t), f / FPS);
     const buf = await page.screenshot({ type: 'png' });
