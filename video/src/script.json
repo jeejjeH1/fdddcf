@@ -1,0 +1,18 @@
+{
+  "voice": "af_heart",
+  "speed": 1.04,
+  "scenes": [
+    { "id": "hook",      "vo": "Can the next generation of DeFi go beyond predefined rules?" },
+    { "id": "defi",      "vo": "Decentralized Finance removed the intermediaries, and opened financial services to anyone. But one fundamental limitation remains." },
+    { "id": "rules",     "vo": "Most smart contracts can only execute conditions that were defined in advance. And the real world? It's rarely that predictable." },
+    { "id": "imagine",   "vo": "Imagine a protocol that could evaluate not just numbers, but news articles, websites, and changing real-world conditions." },
+    { "id": "aichain",   "vo": "This is where AI and blockchain meet." },
+    { "id": "genlayer",  "vo": "GenLayer is exploring Intelligent Contracts. Smart contracts that use AI models to evaluate complex conditions, and interact with the real world." },
+    { "id": "problem",   "vo": "But different AI models can interpret the same information differently. So how does a decentralized network reach agreement, without a single authority?" },
+    { "id": "consensus", "vo": "GenLayer's answer is Optimistic Democracy. A consensus mechanism built on validator evaluations, and a process for resolving disagreements." },
+    { "id": "why",       "vo": "Why does this matter for DeFi? Apps that interpret unstructured information, and respond to real-world events, in entirely new ways." },
+    { "id": "risks",     "vo": "Of course, challenges remain. Security. Data reliability. Execution costs. And the unpredictability of AI." },
+    { "id": "future",    "vo": "But the future of DeFi might not be limited to predefined rules. And GenLayer is one of the projects exploring that direction." },
+    { "id": "outro",     "vo": "So, could AI-powered smart contracts unlock the next wave of DeFi? Or are the risks still too big? Tell us what you think." }
+  ]
+}

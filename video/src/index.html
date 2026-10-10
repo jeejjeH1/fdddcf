@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GenLayer DeFi Motion</title>
+<script type="importmap">
+{ "imports": {
+  "three": "/node_modules/three/build/three.module.js",
+  "three/addons/": "/node_modules/three/examples/jsm/"
+} }
+</script>
+<style>
+@font-face{font-family:'JB';font-weight:500;src:url(/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2)}
+@font-face{font-family:'JB';font-weight:700;src:url(/node_modules/@fontsource/jetbrains-mono/files/jetbrains-mono-latin-700-normal.woff2)}
+@font-face{font-family:'SG';font-weight:500;src:url(/node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2)}
+@font-face{font-family:'SG';font-weight:700;src:url(/node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2)}
+:root{--ink:#0A0B14;--blue:#1F4BFF;--blue2:#5B7CFF;--red:#FF2E43;--gray:#8A90A2;--line:#E4E7EF}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#fff;color:var(--ink)}
+#bg{position:absolute;inset:-60px;z-index:0;
+  background-image:radial-gradient(#dfe3ee 1.7px,transparent 1.8px);background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 65% at 50% 50%,#000 0%,rgba(0,0,0,.55) 55%,transparent 100%)}
+#gl{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:1}
+#ui{position:absolute;inset:0;z-index:2;overflow:hidden}
+.scene{position:absolute;inset:0;display:none;transform-origin:50% 50%}
+.abs{position:absolute}
+.h{font-family:'Inter Display','Inter',sans-serif;font-weight:900;letter-spacing:-.045em;line-height:.98;white-space:nowrap}
+.sg{font-family:'SG',sans-serif}
+.mono{font-family:'JB',monospace;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.center{left:0;right:0;text-align:center}
+.blue{color:var(--blue)} .red{color:var(--red)} .gray{color:var(--gray)}
+.kick{font-size:24px;color:var(--blue)}
+.kick.red{color:var(--red)}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding:.08em .03em .16em;margin:-.08em -.03em -.16em}
+.wi{display:inline-block;will-change:transform}
+.cur{display:inline-block;width:.55em;height:1em;background:currentColor;vertical-align:-.12em;margin-left:.08em}
+.hl{position:relative;display:inline-block;padding:0 .14em;margin:0 -.04em;color:#fff;z-index:0}
+.hl::before{content:"";position:absolute;inset:.06em 0 0 0;background:var(--hlc,var(--red));transform-origin:0 50%;transform:scaleX(var(--p,0));z-index:-1}
+.strike{position:relative;display:inline-block}
+.strike i{position:absolute;left:-.04em;top:52%;height:.11em;background:var(--red);width:0}
+/* HUD */
+#hud{position:absolute;inset:0;z-index:3;pointer-events:none}
+#hud .tl{position:absolute;left:56px;top:44px;display:flex;align-items:center;gap:16px;font-size:18px}
+#hud .tr{position:absolute;right:56px;top:48px;font-size:18px;text-align:right;color:var(--gray)}
+#hud .tr b{color:var(--ink)}
+#hud .bar{position:absolute;left:56px;right:56px;bottom:44px;height:3px;background:var(--line)}
+#hud .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);width:0}
+#hud .bl{position:absolute;left:56px;bottom:62px;font-size:15px;color:var(--gray)}
+#hud .br{position:absolute;right:56px;bottom:62px;font-size:15px;color:var(--gray)}
+.corner{position:absolute;width:26px;height:26px;border-color:var(--ink);border-style:solid;border-width:0}
+/* wipes */
+.wipe{position:absolute;top:-200px;bottom:-200px;width:2600px;left:0;z-index:5;transform:translateX(-3000px) skewX(-16deg)}
+/* cards */
+.card{position:absolute;background:#fff;border:1.5px solid var(--line);border-radius:22px;box-shadow:0 30px 60px -20px rgba(20,30,80,.22),0 8px 18px -8px rgba(20,30,80,.12)}
+.code{font-family:'JB',monospace;font-weight:500;font-size:30px;line-height:1.62;white-space:pre;color:var(--ink)}
+.code .k{color:var(--blue);font-weight:700} .code .n{color:var(--red)} .code .f{color:#6B3BFF} .code .c{color:var(--gray)}
+.chip{display:inline-flex;align-items:center;gap:14px;padding:16px 28px;border:2px solid var(--ink);border-radius:999px;font-family:'SG';font-weight:700;font-size:32px;background:#fff}
+.chip svg{width:30px;height:30px}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.bub{font-family:'JB';font-weight:700;font-size:34px;padding:12px 22px;border-radius:14px;background:#fff;border:2px solid currentColor;white-space:nowrap}
+.step{display:flex;align-items:center;gap:24px;font-family:'SG';font-weight:700;font-size:38px;margin:0 0 26px;color:#B9BECC}
+.step .n{font-family:'JB';font-size:22px;width:56px;height:56px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center}
+.fcard{position:absolute;width:480px;height:340px;padding:38px;border-radius:26px;background:#fff;border:1.5px solid var(--line);box-shadow:0 40px 70px -28px rgba(20,30,80,.28)}
+.fcard .num{font-family:'JB';font-weight:700;font-size:22px;color:var(--gray);letter-spacing:.1em}
+.fcard .ttl{font-family:'Inter Display';font-weight:800;font-size:46px;letter-spacing:-.03em;line-height:1.05;margin-top:22px;white-space:normal}
+.fcard svg{width:64px;height:64px;margin-top:26px}
+.risk{display:flex;align-items:baseline;gap:30px;font-size:68px;padding:14px 0;position:relative}
+.risk .n{font-family:'JB';font-weight:700;font-size:24px;color:var(--red);letter-spacing:.08em}
+.risk .ln{position:absolute;left:0;bottom:0;height:2px;background:var(--line);width:0}
+.poll{position:absolute;width:700px;height:300px;border-radius:28px;padding:44px;display:flex;flex-direction:column;justify-content:space-between}
+.poll .opt{font-family:'JB';font-weight:700;font-size:26px;letter-spacing:.1em}
+.poll .t{font-family:'Inter Display';font-weight:900;font-size:56px;letter-spacing:-.035em;line-height:1.02}
+.icard{position:absolute;width:390px;padding:22px 26px;border-radius:20px;background:#fff;border:1.5px solid var(--line);box-shadow:0 26px 50px -22px rgba(20,30,80,.25)}
+.icard .tag{font-family:'JB';font-weight:700;font-size:16px;letter-spacing:.12em;color:var(--blue)}
+.icard .tx{font-family:'SG';font-weight:700;font-size:28px;margin-top:10px;line-height:1.15}
+.icard .ph{height:10px;border-radius:5px;background:#EDEFF5;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<div id="ui">
+
+<!-- 01 HOOK -->
+<section class="scene" id="s-hook">
+  <div class="abs center mono kick" id="hookKick" style="top:598px"></div>
+  <div class="abs center h" style="top:648px;font-size:100px"><span class="kin" id="hook1">Can the next generation of DeFi</span></div>
+  <div class="abs center h" style="top:768px;font-size:100px"><span class="kin" id="hook2">go beyond</span> <span class="hl" id="hookHl"><span class="kin" id="hook3">predefined rules?</span></span></div>
+  <div class="abs" id="hookRing" style="left:960px;top:330px;width:10px;height:10px;border:3px solid var(--blue);border-radius:50%;opacity:0"></div>
+</section>
+
+<!-- 02 DEFI -->
+<section class="scene" id="s-defi">
+  <div class="abs mono kick" id="defiKick" style="left:150px;top:300px"></div>
+  <div id="defiA" class="abs" style="left:150px;top:350px">
+    <div class="h" style="font-size:124px"><span class="kin" id="defi1">No middlemen.</span></div>
+    <div class="h blue" style="font-size:124px;margin-top:8px"><span class="kin" id="defi2">Open to anyone.</span></div>
+  </div>
+  <div id="defiB" class="abs" style="left:150px;top:350px">
+    <div class="h" style="font-size:124px"><span class="kin" id="defi3">But one</span></div>
+    <div class="h red" id="defiGl" style="font-size:124px;margin-top:8px"><span class="kin" id="defi4">limitation</span></div>
+    <div class="h" style="font-size:124px;margin-top:8px"><span class="kin" id="defi5">remains.</span></div>
+  </div>
+</section>
+
+<!-- 03 RULES -->
+<section class="scene" id="s-rules" style="perspective:1800px">
+  <div class="card" id="codeCard" style="left:130px;top:280px;width:860px;height:520px;padding:0">
+    <div style="height:64px;border-bottom:1.5px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 26px">
+      <span class="dot" style="background:var(--red)"></span><span class="dot" style="background:#C9CEDA"></span><span class="dot" style="background:var(--blue)"></span>
+      <span class="mono" style="font-size:16px;color:var(--gray);margin-left:16px;letter-spacing:.06em;text-transform:none">SmartContract.sol</span>
+    </div>
+    <div class="code" id="codeBody" style="padding:30px 40px"></div>
+    <div class="mono" id="codeErr" style="position:absolute;left:40px;bottom:30px;font-size:22px;color:var(--red);letter-spacing:.04em"></div>
+  </div>
+  <div id="rulesA" class="abs" style="left:1090px;top:330px">
+    <div class="mono kick" id="rulesKick" style="margin-bottom:22px;height:30px"></div>
+    <div class="h" style="font-size:112px"><span class="kin" id="rules1">Predefined</span></div>
+    <div class="h blue" style="font-size:112px;margin-top:6px"><span class="kin" id="rules2">rules only.</span></div>
+  </div>
+  <div id="rulesB" class="abs" style="left:1090px;top:330px">
+    <div class="h" style="font-size:104px"><span class="kin" id="rules3">The real world</span></div>
+    <div class="h" style="font-size:104px;margin-top:6px"><span class="kin" id="rules4">is rarely</span></div>
+    <div class="h red" style="font-size:104px;margin-top:6px" id="rulesWob">predictable.</div>
+  </div>
+</section>
+
+<!-- 04 IMAGINE -->
+<section class="scene" id="s-imagine">
+  <div class="abs center mono kick" id="imKick" style="top:120px"></div>
+  <div class="abs center h" style="top:166px;font-size:84px"><span class="kin" id="im1">A protocol that evaluates</span></div>
+  <div class="abs center h blue" id="imSlot" style="top:262px;font-size:84px;height:110px"></div>
+  <svg class="abs" id="imLines" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div class="icard" id="ic0" style="left:170px;top:430px"><div class="tag">NUMBERS</div><div class="tx mono" style="letter-spacing:0;text-transform:none;font-size:34px">ETH/USD 2,431.08</div>
+    <svg width="338" height="60" style="margin-top:8px"><polyline fill="none" stroke="#1F4BFF" stroke-width="4" points="0,48 30,40 60,44 90,30 120,34 150,22 180,28 210,14 240,20 270,10 300,16 338,4"/></svg></div>
+  <div class="icard" id="ic1" style="left:1360px;top:430px"><div class="tag">NEWS ARTICLE</div><div class="tx">Central bank signals a policy shift</div><div class="ph" style="width:92%"></div><div class="ph" style="width:70%"></div></div>
+  <div class="icard" id="ic2" style="left:170px;top:720px"><div class="tag">WEBSITE</div><div class="tx mono" style="letter-spacing:0;text-transform:none;font-size:22px;color:var(--gray)">https://data.example.org</div><div class="ph" style="width:96%"></div><div class="ph" style="width:80%"></div><div class="ph" style="width:60%"></div></div>
+  <div class="icard" id="ic3" style="left:1360px;top:720px"><div class="tag" style="color:var(--red)">REAL WORLD</div><div class="tx">Storm warning issued. Port closed.</div><div class="ph" style="width:85%"></div></div>
+</section>
+
+<!-- 05 AI x CHAIN -->
+<section class="scene" id="s-aichain">
+  <div class="abs center mono kick" id="acKick" style="top:690px"></div>
+  <div class="abs center h" style="top:740px;font-size:170px;letter-spacing:-.05em">
+    <span id="acAI" class="blue" style="display:inline-block">AI</span>
+    <span id="acX" class="red" style="display:inline-block;margin:0 .12em">&times;</span>
+    <span id="acBC" style="display:inline-block">BLOCKCHAIN</span>
+  </div>
+</section>
+
+<!-- 06 GENLAYER -->
+<section class="scene" id="s-genlayer">
+  <div class="abs" style="left:880px;top:270px">
+    <div class="mono kick" id="glKick" style="height:30px"></div>
+    <div class="h" id="glName" style="font-size:180px;margin-top:10px;height:190px"></div>
+    <div class="h blue" style="font-size:76px;margin-top:22px;position:relative;display:inline-block"><span class="kin" id="gl1">Intelligent Contracts</span><i id="glUl" style="position:absolute;left:0;bottom:-14px;height:6px;background:var(--blue);width:0"></i></div>
+    <div id="glChips" style="margin-top:70px;display:flex;gap:20px">
+      <div class="chip" id="ch0"><svg viewBox="0 0 24 24" fill="none" stroke="#1F4BFF" stroke-width="2.4"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg>AI models</div>
+      <div class="chip" id="ch1"><svg viewBox="0 0 24 24" fill="none" stroke="#0A0B14" stroke-width="2.4"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="18" cy="6" r="2"/><circle cx="15" cy="18" r="2"/></svg>Complex conditions</div>
+      <div class="chip" id="ch2"><svg viewBox="0 0 24 24" fill="none" stroke="#FF2E43" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Real-world data</div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 PROBLEM -->
+<section class="scene" id="s-problem">
+  <svg class="abs" id="pbLines" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div class="abs center" style="top:110px"><span class="chip mono" id="pbIn" style="font-size:22px;letter-spacing:.1em;border-color:var(--blue);color:var(--blue)">SAME INFORMATION</span></div>
+  <div class="abs mono" id="pbL0" style="left:311px;width:200px;top:262px;text-align:center;font-size:20px;color:var(--gray)">MODEL A</div>
+  <div class="abs mono" id="pbL1" style="left:860px;width:200px;top:262px;text-align:center;font-size:20px;color:var(--gray)">MODEL B</div>
+  <div class="abs mono" id="pbL2" style="left:1409px;width:200px;top:262px;text-align:center;font-size:20px;color:var(--gray)">MODEL C</div>
+  <div class="abs" style="left:211px;width:400px;top:580px;text-align:center"><span class="bub blue" id="pbB0"></span></div>
+  <div class="abs" style="left:760px;width:400px;top:580px;text-align:center"><span class="bub red" id="pbB1"></span></div>
+  <div class="abs" style="left:1309px;width:400px;top:580px;text-align:center"><span class="bub" id="pbB2" style="color:var(--ink)"></span></div>
+  <div class="abs center h" style="top:720px;font-size:92px"><span class="kin" id="pb1">How do we reach agreement</span></div>
+  <div class="abs center h" style="top:830px;font-size:92px"><span class="kin" id="pb2">without a</span> <span class="strike" id="pbStrike"><span class="kin" id="pb3">single authority?</span><i></i></span></div>
+</section>
+
+<!-- 08 CONSENSUS -->
+<section class="scene" id="s-consensus">
+  <div class="abs" style="left:150px;top:230px">
+    <div class="mono kick" id="csKick" style="height:30px"></div>
+    <div class="h" id="csName1" style="font-size:124px;margin-top:12px;height:124px"></div>
+    <div class="h blue" id="csName2" style="font-size:124px;margin-top:6px;height:130px"></div>
+    <div style="margin-top:64px">
+      <div class="step" id="st0"><span class="n">01</span>Leader proposes</div>
+      <div class="step" id="st1"><span class="n">02</span>Validators evaluate</div>
+      <div class="step" id="st2"><span class="n">03</span>Disagreements resolved</div>
+    </div>
+  </div>
+  <div class="abs" style="left:1448px;top:880px;transform:translateX(-50%)"><span class="chip mono" id="csOk" style="font-size:24px;letter-spacing:.1em;background:var(--blue);border-color:var(--blue);color:#fff">CONSENSUS REACHED</span></div>
+</section>
+
+<!-- 09 WHY -->
+<section class="scene" id="s-why" style="perspective:1600px">
+  <div class="abs center h" style="top:190px;font-size:104px"><span class="kin" id="why1">Why does this matter for</span> <span class="blue"><span class="kin" id="why2">DeFi?</span></span></div>
+  <div class="fcard" id="fc0" style="left:180px;top:450px"><div class="num">01</div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1F4BFF" stroke-width="2"><path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7M9 7h4"/></svg>
+    <div class="ttl">Interpret unstructured information</div></div>
+  <div class="fcard" id="fc1" style="left:720px;top:450px"><div class="num">02</div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FF2E43" stroke-width="2"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
+    <div class="ttl">React to real&#8209;world events</div></div>
+  <div class="fcard" id="fc2" style="left:1260px;top:450px"><div class="num">03</div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#0A0B14" stroke-width="2"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 7v10M6 12h4c3 0 4-2 6 0"/></svg>
+    <div class="ttl">Flexible decision&#8209;making</div></div>
+</section>
+
+<!-- 10 RISKS -->
+<section class="scene" id="s-risks">
+  <div class="abs" style="left:150px;top:200px;width:1000px">
+    <div class="mono kick red" id="rkKick" style="height:30px"></div>
+    <div class="h" style="font-size:112px;margin-top:12px"><span class="kin" id="rk0">Challenges remain.</span></div>
+    <div style="margin-top:40px">
+      <div class="risk h" id="rk1"><span class="n">01</span><span class="t">Security</span><i class="ln"></i></div>
+      <div class="risk h" id="rk2"><span class="n">02</span><span class="t">Data reliability</span><i class="ln"></i></div>
+      <div class="risk h" id="rk3"><span class="n">03</span><span class="t">Execution costs</span><i class="ln"></i></div>
+      <div class="risk h" id="rk4"><span class="n">04</span><span class="t">AI unpredictability</span><i class="ln"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 FUTURE -->
+<section class="scene" id="s-future">
+  <div class="abs" style="left:360px;top:190px;width:1200px;height:700px;background:radial-gradient(ellipse at center,rgba(255,255,255,1) 0%,rgba(255,255,255,.92) 50%,rgba(255,255,255,0) 75%)"></div>
+  <div id="fuA">
+    <div class="abs center h" style="top:300px;font-size:120px"><span class="kin" id="fu1">The future of DeFi</span></div>
+    <div class="abs center h gray" style="top:428px;font-size:120px"><span class="kin" id="fu2">isn't limited to</span></div>
+    <div class="abs center h" style="top:556px;font-size:120px"><span class="strike" id="fuStrike"><span class="kin" id="fu3">predefined rules.</span><i></i></span></div>
+  </div>
+  <div id="fuB">
+    <div class="abs center mono kick" id="fuKick" style="top:350px"></div>
+    <div class="abs center h" style="top:400px;font-size:124px"><span class="kin" id="fu4">GenLayer is exploring</span></div>
+    <div class="abs center h blue" style="top:530px;font-size:124px"><span class="kin" id="fu5">that direction.</span></div>
+  </div>
+</section>
+
+<!-- 12 OUTRO -->
+<section class="scene" id="s-outro" style="perspective:1600px">
+  <div id="otA">
+    <div class="abs center h" style="top:170px;font-size:82px"><span class="kin" id="ot1">Could AI-powered smart contracts</span></div>
+    <div class="abs center h" style="top:266px;font-size:82px"><span class="kin" id="ot2">unlock the next wave of</span> <span class="blue"><span class="kin" id="ot3">DeFi?</span></span></div>
+    <div class="poll" id="poA" style="left:220px;top:480px;background:var(--blue);color:#fff;box-shadow:0 40px 80px -30px rgba(31,75,255,.6)"><div class="opt">OPTION A</div><div class="t">The next wave of DeFi innovation</div></div>
+    <div class="poll" id="poB" style="left:1000px;top:480px;background:#fff;border:3px solid var(--red);color:var(--ink);box-shadow:0 40px 80px -30px rgba(255,46,67,.35)"><div class="opt red">OPTION B</div><div class="t">The risks are still too significant</div></div>
+  </div>
+  <div id="otB">
+    <div class="abs center h" id="otName" style="top:668px;font-size:116px"></div>
+    <div class="abs center mono" id="otCta" style="top:828px;font-size:32px;color:var(--blue)"></div>
+  </div>
+</section>
+
+<div class="wipe" id="wipe1" style="background:var(--blue)"></div>
+<div class="wipe" id="wipe2" style="background:var(--ink)"></div>
+<div class="wipe" id="wipe3" style="background:var(--red);width:90px"></div>
+</div>
+
+<div id="hud">
+  <div class="tl mono">
+    <svg width="34" height="34" viewBox="0 0 400 400"><path fill="#0A0B14" d="M183 33L20 372L178 310L122 281L183 152Z M218 33L218 152L279 281L223 310L381 372Z"/><path fill="#1F4BFF" d="M200 196L166 265L200 283L235 266Z"/></svg>
+    <span>GenLayer <span class="gray">&times; DeFi</span></span>
+  </div>
+  <div class="tr mono"><b id="hudN">01</b> / 12 &nbsp;&middot;&nbsp; <span id="hudL">HOOK</span></div>
+  <div class="bl mono">Intelligent Contracts</div>
+  <div class="br mono" id="hudT">00:00</div>
+  <div class="bar"><i id="hudBar"></i></div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
