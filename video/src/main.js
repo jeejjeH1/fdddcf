@@ -537,7 +537,6 @@ function update(t) {
   $('hudN').textContent = String(s.i + 1).padStart(2, '0');
   $('hudL').textContent = s.id.toUpperCase();
   { const sec = Math.floor(t); $('hudT').textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`; }
-  $('hudBar').style.width = (t / DUR) * 100 + '%';
 
   // wipes
   {
